@@ -1,4 +1,6 @@
 import * as console from "defcon.console";
+import * as data from "../modules/data";
+import * as tasks from "../modules/tasks";
 
 export function init(this: unknown): void {
 	if (console != undefined && sys.get_engine_info().is_debug) {  // eslint-disable-line
@@ -47,6 +49,14 @@ export function init(this: unknown): void {
 			print(details?.requestId);
 		});
 	}
+
+	tasks.task(1, () => {
+		const waveset = [...data.wavesets[0], ...data.wavesets[0], ...data.wavesets[0], ...data.wavesets[0]];
+		waveset.forEach(wave => {
+			msg.post("/wave-spawner#spawner", hash("spawn"), { formation: wave.formation, speed: 100 });
+			coroutine.yield();
+		});
+	});
 }
 
 export function final(this: unknown): void {
@@ -56,10 +66,12 @@ export function final(this: unknown): void {
 	
 }
 
-export function update(this: unknown, _dt: number): void {
+export function update(this: unknown, dt: number): void {
 	if (console != undefined && sys.get_engine_info().is_debug) {  // eslint-disable-line
 		console.update();
 	}
+
+	tasks.update(dt);
 }
 
 export function on_message(this: unknown, _message_id: hash, _message: string, _sender: url): void {
