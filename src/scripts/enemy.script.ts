@@ -32,14 +32,14 @@ export function init(this: Props): void {
 }
 
 export function update(this: Props, dt: number): void {
-    if (!this.dead) {
-        let pos = go.get_position();
-        pos = pos + this.dir * this.speed * dt as vmath.vector3;
-        go.set_position(pos);
+    if (this.dead == true) return;
 
-        if (pos.y < -this.range) {
-            go.delete();
-        }
+    let pos = go.get_position();
+    pos = pos + this.dir * this.speed * dt as vmath.vector3;
+    go.set_position(pos);
+
+    if (pos.y < -this.range) {
+        go.delete();
     }
 }
 
