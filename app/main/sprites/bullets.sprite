@@ -1,0 +1,4 @@
+tile_set: "/main/atlas/sprites.atlas"
+default_animation: "minigun-small"
+material: "/builtins/materials/sprite.material"
+blend_mode: BLEND_MODE_ALPHA

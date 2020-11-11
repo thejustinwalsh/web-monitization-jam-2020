@@ -1,0 +1,27 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+render = /orthographic/render/orthographic.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 800
+height = 800
+update_frequency = 60
+
+[android]
+input_method = HiddenInputField
+
+[project]
+title = Web Monetization Jam 2020
+dependencies = https://github.com/defold/extension-webmonetization/archive/1.0.2.zip,https://github.com/britzl/defold-orthographic/archive/2.11.1.zip,https://github.com/britzl/defcon/archive/2.4.0.zip,https://github.com/britzl/defnet/archive/5.0.1.zip,https://github.com/britzl/defold-luasocket/archive/0.11.zip
+
+[render]
+clear_color_red = 0.0
+clear_color_green = 0.0
+clear_color_blue = 0.0
+
+[webmonetization]
+payment_pointer = $ilp.uphold.com/hGqBNJM932UJ
+
