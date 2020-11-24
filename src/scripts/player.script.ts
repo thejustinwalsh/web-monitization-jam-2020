@@ -1,7 +1,3 @@
-interface Action {
-    pressed: boolean
-}
-
 interface Props {
     player: string,
     type: hash,
@@ -13,18 +9,26 @@ interface Props {
     anim: string,
     bounds: vmath.vector3,
     bulletRank: number,
-    bulletType: hash
+    bulletType: hash,
+    fireTimer: number,
+    fireDelay: number,
+    repeatDelay: number
 }
 
 go.property("speed", 10);
 go.property("type", hash("player-blue"));
 go.property("bounds", vmath.vector3(160, 183, 0));
+go.property("fireDelay", .33);
+go.property("repeatDelay", .1);
+
+const fire = (pos: vmath.vector3, rank: number, type: hash) => factory.create("#bullets", pos, undefined, { rank, type, speed: 500 });
 
 export function init(this: Props): void {
     msg.post(".", "acquire_input_focus");
 
     if (this.type == undefined) this.type = hash("player-blue");  // ? hack: HTML5 props
     if (this.bounds == undefined) this.bounds = vmath.vector3(160, 183, 0);  // ? hack: HTML5 props
+    if (this.fireDelay == undefined) this.fireDelay = .16; // ? hack: HTML5 props
 
     this.input = vmath.vector3();
     this.dir = vmath.vector3(0, 1, 0);
@@ -34,7 +38,9 @@ export function init(this: Props): void {
     if (this.type == hash("player-red")) this.player = "player-red";
 
     this.bulletRank = 0;
-    this.bulletType = hash("minigun");
+    this.bulletType = hash("plasma");
+
+    this.fireTimer = 0;
 }
 
 export function final(): void {
@@ -63,17 +69,21 @@ export function update(this: Props, dt: number): void {
     }
 
     if (this.firing) {
-        const pos = go.get_position();
-        factory.create("#bullets", pos, undefined, { rank: this.bulletRank, type: this.bulletType, speed: 500 });
+        this.fireTimer -= dt;
+        if (this.fireTimer <= 0) {
+            this.fireTimer += this.repeatDelay;
+            fire(go.get_position(), this.bulletRank, this.bulletType);
+        }
     }
 
     this.input.x = 0;
     this.input.y = 0;
     this.moving = false;
-    this.firing = false;
 }
 
-export function on_input(this: Props, actionId: hash, action: Action): void {
+interface InputAction { pressed: boolean, released: boolean }
+
+export function on_input(this: Props, actionId: hash, action: InputAction): void {
     if (actionId == hash("forward")) {
         this.input.y = 1;
     }
@@ -88,6 +98,11 @@ export function on_input(this: Props, actionId: hash, action: Action): void {
     }
     else if (actionId == hash("fire") && action.pressed) {
         this.firing = true;
+        this.fireTimer = this.fireDelay;
+        fire(go.get_position(), this.bulletRank, this.bulletType);
+    }
+    else if (actionId == hash("fire") && action.released) {
+        this.firing = false;
     }
 
     if (vmath.length(this.input) > 0) {
@@ -96,8 +111,13 @@ export function on_input(this: Props, actionId: hash, action: Action): void {
     }
 }
 
-interface MsgProps { rank: string, type: string }
-export function on_message(this: Props, messageId: hash, message: MsgProps, _sender: url): void {
-	if (messageId == hash("rank")) this.bulletRank = ["0", "1", "2"].indexOf(message.rank);
-    if (messageId == hash("type")) this.bulletType = hash(message.type);
+export function on_message(this: Props, messageId: hash, message: unknown, _sender: url): void {
+	if (messageId == hash("rank")) {
+        const msgRank = message as { rank: string, type: string };
+        this.bulletRank = ["0", "1", "2"].indexOf(msgRank.rank);
+    }
+    else if (messageId == hash("type")) {
+        const msgRank = message as { rank: string, type: string };
+        this.bulletType = hash(msgRank.type);
+    }
 }
